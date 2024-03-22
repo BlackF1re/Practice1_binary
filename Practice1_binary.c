@@ -41,10 +41,37 @@ int error() {
     exit(1);
 }
 
+void reorganizate(int n, int m, FILE* file)
+{
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < m / 2; ++j) {
+            float first_element, second_element;
+            long int offset1 = (i * m + 2 * j) * sizeof(float);
+            long int offset2 = (i * m + 2 * j + 1) * sizeof(float);
+
+            fseek(file, offset1, SEEK_SET);
+            fread(&first_element, sizeof(float), 1, file);
+
+            fseek(file, offset2, SEEK_SET);
+            fread(&second_element, sizeof(float), 1, file);
+
+            //сохранение значения
+            float temp = first_element;
+
+            //запись первого элемента
+            fseek(file, offset1, SEEK_SET);
+            fwrite(&second_element, sizeof(float), 1, file);
+
+            //запись второго элемента
+            fseek(file, offset2, SEEK_SET);
+            fwrite(&temp, sizeof(float), 1, file);
+        }
+    }
+}
+
 int main() {
     SetConsoleOutputCP(1251);
     int isDigit = 0;
-    printf("Введите имя файла в формате filename.bin: norm\t");
     char* file_name = "matrix.bin";
 
     printf("Введите количество строк:\t");
@@ -71,30 +98,7 @@ int main() {
     printMatrix(file_name, n, m);
 
     //реорганизация
-    for (int i = 0; i < n; ++i) {
-        for (int j = 0; j < m / 2; ++j) {
-            float first_element, second_element;
-            long int offset1 = (i * m + 2 * j) * sizeof(float);
-            long int offset2 = (i * m + 2 * j + 1) * sizeof(float);
-
-            fseek(file, offset1, SEEK_SET);
-            fread(&first_element, sizeof(float), 1, file);
-
-            fseek(file, offset2, SEEK_SET);
-            fread(&second_element, sizeof(float), 1, file);
-
-            //сохранение значения
-            float temp = first_element;
-
-            //запись первого элемента
-            fseek(file, offset1, SEEK_SET);
-            fwrite(&second_element, sizeof(float), 1, file);
-
-            //запись второго элемента
-            fseek(file, offset2, SEEK_SET);
-            fwrite(&temp, sizeof(float), 1, file);
-        }
-    }
+    reorganizate(n, m, file);
     fclose(file);
 
     printf("Полученная матрица:\n");
